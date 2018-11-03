@@ -409,7 +409,7 @@ class TrainDataExtractorV2:
         npy_path = self.work_path + "TD_" + self.sample_label + ".npy"
         np.save(npy_path, td_arr)
 
-        rolist_path = self.work_path + "ro_" + self.sample_label + ".json"
+        rolist_path = npy_path.replace(".npy", "_ro.json")
         save_json(rolist_path, self.read_order_list)
         self.my_logger.info("save traindata success!")
         self.my_logger.info(npy_path)

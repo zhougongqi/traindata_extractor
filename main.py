@@ -41,6 +41,7 @@ if __name__ == "__main__":
     }
     # glob wanted files
     filelist = glob.glob(ori_ras_path + "*sr_band*.tif")
+    filelist.sort()
     img_name = ori_ras_path.split("/")[-2]
     img_pro_dict = Vividict()
     bn = 0
