@@ -8,6 +8,15 @@ from traindata_extractor.ground_truth.TrainDataExtractor import TrainDataExtract
 
 from traindata_extractor.general.common import *
 from traindata_extractor.general.Vividict import Vividict
+from traindata_extractor.model.SvmModel import SVMClassifier
+from traindata_extractor.model.skModel import skModel
+
+from traindata_extractor.model.DecisionTree import DecisionTree
+
+# test model
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 
 def main(process_dict: dict):
@@ -23,13 +32,35 @@ def main(process_dict: dict):
         process_dict, read_order_list, sample_label="l8_heishan_test"
     )
     status = tde.set_join_char("_")
+    status = tde.set_keep_label([1])
     traindata, feat_name_list, npypath = tde.go_get_mask_2npy()
+
+    ## train model
+    # svm = SVMClassifier(traindata, process_dict["work_path"])
+    # svm.fit()
+
+    # dt_max_depth = 15
+    # dt_crossValidation_num = 10
+    # model_path = DecisionTree(
+    #     traindata,
+    #     process_dict["work_path"],
+    #     max_depth=dt_max_depth,
+    #     crossValidation_num=dt_crossValidation_num,
+    # )
+
+    # train model
+    skm = skModel(RandomForestClassifier(), traindata, process_dict["work_path"])
+    skm.fit()
+
     print("fin")
 
     return True
 
 
 if __name__ == "__main__":
+    """
+    mainly for landsat 8 seperate band tif imgs
+    """
     ori_ras_path = "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
     process_dict = {
         "img_pro_dict": {},
