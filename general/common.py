@@ -1,5 +1,8 @@
 import json
 import os
+import sys
+import glob
+import math
 from osgeo import gdalnumeric
 from PIL import Image
 import numpy as np
@@ -296,3 +299,29 @@ def add_root_path(img_pro_dict: dict, shp_reproj_dict: dict) -> (dict, dict):
     shp_reproj_dict = {k: os.path.join(home_dir, v) for k, v in shp_reproj_dict.items()}
     # add home dir to each file path
     return img_pro_dict, shp_reproj_dict
+
+
+def get_bands_into_a_dict(img_path: str):
+    filelist = glob.glob(img_path + "*sr_band*.tif")
+    filelist.sort()
+    img_name = img_path.split("/")[-2]
+    img_pro_dict = Vividict()
+    bn = 0
+    for f in filelist:
+        bn += 1
+        band_str = "band_" + str(bn)
+        img_pro_dict[img_name][band_str] = filelist[bn - 1]
+    return img_pro_dict, bn
+
+
+def print_progress_bar(now_pos: int, total_pos: int):
+    n_sharp = math.floor(50 * now_pos / total_pos)
+    n_space = 50 - n_sharp
+    sys.stdout.write(
+        "  ["
+        + "#" * n_sharp
+        + " " * n_space
+        + "]"
+        + "{:.2%}\r".format(now_pos / total_pos)
+    )
+

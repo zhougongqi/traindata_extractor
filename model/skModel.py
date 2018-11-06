@@ -77,9 +77,18 @@ class skModel(BaseEstimator):
         # fit the classifier~
         print("model {} fitting...".format(self.clf.__class__.__name__))
         self.clf.fit(self.train_feature, self.train_label)
+
+        test_arr = np.array(
+            [
+                [140., 137., 269., 140., 3513., 867., 338.],
+                [140., 137., 269., 140., 3513., 867., 338.],
+            ]
+        )
+        print(self.clf.predict(test_arr))
         # self.clf = clf
-        joblib.dump(self.clf, self.model_path)
-        return True
+        model_out_path = self.model_path
+        joblib.dump(self.clf, model_out_path)
+        return model_out_path
 
     def test_fit(self):
         for loop_index in range(self.crossValidation_num):

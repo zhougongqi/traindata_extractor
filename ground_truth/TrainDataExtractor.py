@@ -316,6 +316,20 @@ class TrainDataExtractorV2:
         """
         self.train_feature = self.train_feature * 1.0 / self.ref_coef
 
+    def combine_npys(self, npy_list: list):
+        n_files = len(npy_list)
+        all_npy = None
+        nn = 0
+        for nf in npy_list:
+            tmp_npy = np.load(nf)
+            nn += 1
+            print("{}/{} npy added".format(nn, n_files))
+            if all_npy is None:
+                all_npy = tmp_npy
+            else:
+                all_npy = np.vstack((all_npy, tmp_npy))
+        return all_npy
+
     def go_get_mask_2npy(self) -> (np.ndarray, list, str):
         """
         Function:
@@ -387,7 +401,7 @@ class TrainDataExtractorV2:
                 print("-- {}/{} band:".format(bn, n_bands))
                 if n_bands >= 2:  # add a band string to feat_str
                     band_str = "b" + str(bn)
-                    feat_str = feat_str + band_str
+                    feat_str1 = feat_str + band_str
                 else:
                     band_str = ""
 
@@ -420,7 +434,7 @@ class TrainDataExtractorV2:
                     td_arr = np.vstack((td_arr, traindata))
                     print("    ->", td_arr.shape)
                 # write featname into a list
-                feat_name_list.append(feat_str)
+                feat_name_list.append(feat_str1)
 
         self.train_label = pids
         self.train_feature = td_arr
