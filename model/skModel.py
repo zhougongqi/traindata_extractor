@@ -23,7 +23,7 @@ class skModel(BaseEstimator):
         decision_function_shape="ovr",
     ) -> str:
         """
-        SVM classifier
+        Sk-series classifier
         """
         self.clf = clf
         # initialize parameters

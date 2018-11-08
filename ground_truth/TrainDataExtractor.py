@@ -77,6 +77,7 @@ class TrainDataExtractorV2:
         self.shp_dict = shp_dict
         self.shp_label_path = shp_dict["samples"]
         self.work_path = process_dic["work_path"]
+        self.outname_label = process_dic["outname_label"]
 
         # key para
         self.field_name = process_dic["field_name"]
@@ -316,20 +317,6 @@ class TrainDataExtractorV2:
         """
         self.train_feature = self.train_feature * 1.0 / self.ref_coef
 
-    def combine_npys(self, npy_list: list):
-        n_files = len(npy_list)
-        all_npy = None
-        nn = 0
-        for nf in npy_list:
-            tmp_npy = np.load(nf)
-            nn += 1
-            print("{}/{} npy added".format(nn, n_files))
-            if all_npy is None:
-                all_npy = tmp_npy
-            else:
-                all_npy = np.vstack((all_npy, tmp_npy))
-        return all_npy
-
     def go_get_mask_2npy(self) -> (np.ndarray, list, str):
         """
         Function:
@@ -404,6 +391,7 @@ class TrainDataExtractorV2:
                     feat_str1 = feat_str + band_str
                 else:
                     band_str = ""
+                    feat_str1 = feat_str
 
                 # read raster data band bn
                 ras_data = self.get_ori_data(self.img_dict[k1][k2], bn)
@@ -457,7 +445,7 @@ class TrainDataExtractorV2:
 
         # zzz todo: add invalid value removal
 
-        npy_path = self.work_path + "TD_" + self.sample_label + ".npy"
+        npy_path = self.work_path + "TD_" + self.outname_label + ".npy"
         np.save(npy_path, td_arr)
 
         rolist_path = npy_path.replace(".npy", "_ro.json")

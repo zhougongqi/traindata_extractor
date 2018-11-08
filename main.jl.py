@@ -62,32 +62,18 @@ def main(process_dict: dict):
 
 if __name__ == "__main__":
     """
-    mainly for landsat 8 seperate band tif imgs
+    deal with jilin and heilongjiang
     """
     ori_ras_path = "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
     # "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
-    pro_ras_list = [
-        # "/home/tq/tq-data04/landsat_sr/LC08/01/120/030/LC08_L1TP_120030_20180910_20180913_01_T1/"
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/121/031/LC08_L1TP_121031_20180816_20180829_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/030/LC08_L1TP_120030_20180910_20180913_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/120/032/LC08_L1TP_120032_20180825_20180829_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/033/LC08_L1TP_120033_20180825_20180829_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/119/030/LC08_L1TP_119030_20180802_20180814_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/119/031/LC08_L1TP_119031_20180802_20180814_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/119/032/LC08_L1TP_119032_20180802_20180814_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/031/LC08_L1TP_118031_20180827_20180830_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/032/LC08_L1TP_118032_20180827_20180830_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/033/LC08_L1TP_118033_20180827_20180830_01_T1/",
-    ]
+    pro_ras_list = load_json("/home/tq/data_pool/X-EX/china/JL/JL_result_2018.json")
     process_dict = {
         "img_pro_dict": {},
         "shp_reproj_dict": {
             "samples": "/home/tq/data_pool/china_crop/Liaoning/shape/roi_2c_RiOt_L8_shp_all_utm_n51_3tile_2.shp"
         },
         "pro_ras_list": pro_ras_list,
-        "work_path": "/home/tq/data_pool/china_crop/Liaoning/out/mlp2/",
+        "work_path": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/out/mlp/",
         "field_name": "label",
         "traindata_path_npy": "/home/tq/data_pool/china_crop/Liaoning/npys/TD_all_118-032-20180827v2.npy_119-030-20180802v2.npy_120-032-20180825v2.npy_v2.npy",
         "read_order_list": "/home/tq/data_pool/china_crop/Liaoning/npys/TD_118-032-20180827_ro.json",

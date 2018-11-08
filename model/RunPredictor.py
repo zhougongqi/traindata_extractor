@@ -39,7 +39,7 @@ def run_predictor(
     model_path = process_dict["model_path"]
     pro_ras_list = process_dict["pro_ras_list"]
     work_path = process_dict["work_path"]
-    read_order_list = process_dict["read_order_list"]
+    read_order_list = load_json(process_dict["read_order_list"])
 
     single_flag = False
     model_shortname = os.path.basename(model_path)
@@ -59,9 +59,14 @@ def run_predictor(
     for ras_file in pro_ras_list:
         nf += 1
         print("processing img {}/{} :{}".format(nf, n_files, ras_file))
+        if ras_file.startswith("/home"):
+            pass
+        else:
+            ras_file = "/home/tq/" + ras_file + "/"
+        # rasfile = "/home/tq/" + ras_file + "/"
         img_label = ras_file.split("/")[-2]
         # get band tiffs into a list
-        bands_dict, n_feat = get_bands_into_a_dict(ras_file)
+        bands_dict, n_feat = get_bands_into_a_dict(ras_file, "*sr_band*.tif")
 
         # read one input raster dataset
         ds = gdal.Open(next(bands_dict.walk())[-1])
