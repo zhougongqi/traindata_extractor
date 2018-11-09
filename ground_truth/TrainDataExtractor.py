@@ -8,14 +8,7 @@ from osgeo import ogr
 from osgeo import osr
 
 from traindata_extractor.general.Vividict import Vividict
-from traindata_extractor.general.common import (
-    get_reverse_dict,
-    load_json,
-    save_json,
-    add_root_path,
-    placelist_to_numeric,
-    transform_inner_to_vvdic,
-)
+from traindata_extractor.general.common import *
 from traindata_extractor.general.calc_mask_by_shape import (
     calc_mask_by_shape,
     calc_mask_by_shape_block,
@@ -31,6 +24,7 @@ class TrainDataExtractorV2:
         read_order_list: list,
         *,
         label_field_name: str = "label",
+        label_keep_list: list = [1],
         poly_id_field: str = "type",
         bound_field: str = "ID_1",
         mask_value: int = 1,
@@ -83,10 +77,13 @@ class TrainDataExtractorV2:
         self.shp_dict = shp_dict
         self.shp_label_path = shp_dict["samples"]
         self.work_path = process_dic["work_path"]
+        self.outname_label = process_dic["outname_label"]
 
         # key para
         self.field_name = process_dic["field_name"]
         self.mask_value = mask_value
+        self.label_keep_list = label_keep_list
+        self.ref_coef = 10000
 
         self.read_order_list = read_order_list
         self.__n_block = 1
@@ -111,6 +108,10 @@ class TrainDataExtractorV2:
             self.my_logger.error("set_join_char(): illegal char!")
             return False
         self.__joinchar = char
+        return True
+
+    def set_keep_label(self, klist: list) -> bool:
+        self.label_keep_list = klist
         return True
 
     def set_block_num(self, num: int):
@@ -213,7 +214,7 @@ class TrainDataExtractorV2:
         train_data = data[mask_idx]
         mask_t = mask[mask_idx]
         if train_data.shape == mask_t.shape:
-            print(train_data.shape)
+            pass  # print(train_data.shape)
         else:
             raise Exception("get_valid_data_new(): shape not match! skip")
 
@@ -291,21 +292,48 @@ class TrainDataExtractorV2:
 
         return train_data_all, mask_t_all  # train_data[:, np.newaxis]
 
+    def binarize_label(self):
+        # label keep list is given
+        labels = self.label_keep_list
+        new_label = self.train_label.copy()
+        new_label[:] = 0
+        for lb in labels:
+            idx = np.where(self.train_label == lb)
+            new_label[idx] = 1
+
+        return new_label
+
+    def stat_labels(self):
+        labels_list = []
+        for lb in self.train_label:
+            if lb not in labels_list:
+                labels_list.append(lb)
+        self.unique_label_list = labels_list
+        print("num of labels: {}, \nlabels: {}".format(len(labels_list), labels_list))
+
+    def feature_norm_ref(self):
+        """
+        normalize features to reflectance (devide by 10000)
+        """
+        self.train_feature = self.train_feature * 1.0 / self.ref_coef
+
     def go_get_mask_2npy(self) -> (np.ndarray, list, str):
         """
         Function:
-            main func to get npy file or traindata dictionary in Eric's format.
-            get all pixel data from files in self.raster_path_dict;
+            directly put raster data into array
         Input:
         Output:
-            ndarray contains all features, like this:
+            ndarray contains all features and label, like this:
 
-                feat1   feat2   ... featn
+                feat1   feat2   ... featn   label
                 --------------------------------data is below
-                xxx.xx  xxx.xx  ... xxx.xx
-                xxx.xx  xxx.xx  ... xxx.xx
-
+                xxx.xx  xxx.xx  ... xxx.xx  0
+                xxx.xx  xxx.xx  ... xxx.xx  1
+                ...
             npypath:      saved npy file path.
+
+        NOTICE: train feature and train label are transposed before they are combined
+                at #zzz_transpose!
         """
 
         # get geo information from the first item in dict
@@ -360,9 +388,10 @@ class TrainDataExtractorV2:
                 print("-- {}/{} band:".format(bn, n_bands))
                 if n_bands >= 2:  # add a band string to feat_str
                     band_str = "b" + str(bn)
-                    feat_str = feat_str + band_str
+                    feat_str1 = feat_str + band_str
                 else:
                     band_str = ""
+                    feat_str1 = feat_str
 
                 # read raster data band bn
                 ras_data = self.get_ori_data(self.img_dict[k1][k2], bn)
@@ -393,20 +422,30 @@ class TrainDataExtractorV2:
                     td_arr = np.vstack((td_arr, traindata))
                     print("    ->", td_arr.shape)
                 # write featname into a list
-                feat_name_list.append(feat_str)
+                feat_name_list.append(feat_str1)
+
+        self.train_label = pids
+        self.train_feature = td_arr
+
+        # process data
+        self.feature_norm_ref()
+        self.stat_labels()
+        pids = self.binarize_label()
 
         # add labels at the last colomn
-        td_arr = np.vstack((td_arr, pids))
+        td_arr = np.vstack((self.train_feature, pids))
         print("add label:")
         print("    ->", td_arr.shape)
 
+        # zzz_transpose!
         td_arr = td_arr.T
+        td_arr = data_shuffle(td_arr)
         print("transposed    ->", td_arr.shape)
         print(feat_name_list)
 
         # zzz todo: add invalid value removal
 
-        npy_path = self.work_path + "TD_" + self.sample_label + ".npy"
+        npy_path = self.work_path + "TD_" + self.outname_label + ".npy"
         np.save(npy_path, td_arr)
 
         rolist_path = npy_path.replace(".npy", "_ro.json")

@@ -1,5 +1,8 @@
 import json
 import os
+import sys
+import glob
+import math
 from osgeo import gdalnumeric
 from PIL import Image
 import numpy as np
@@ -296,3 +299,56 @@ def add_root_path(img_pro_dict: dict, shp_reproj_dict: dict) -> (dict, dict):
     shp_reproj_dict = {k: os.path.join(home_dir, v) for k, v in shp_reproj_dict.items()}
     # add home dir to each file path
     return img_pro_dict, shp_reproj_dict
+
+
+def get_bands_into_a_dict(img_path: str, expression: str):
+    filelist = glob.glob(img_path + expression)
+    filelist.sort()
+    img_name = img_path.split("/")[-2]
+    img_pro_dict = Vividict()
+    bn = 0
+    for f in filelist:
+        bn += 1
+        band_str = "band_" + str(bn)
+        img_pro_dict[img_name][band_str] = filelist[bn - 1]
+    return img_pro_dict, bn
+
+
+def get_bands_into_a_list(img_path: str, expression: str):
+    filelist = glob.glob(img_path + expression)
+    filelist.sort()
+    return filelist
+
+
+def print_progress_bar(now_pos: int, total_pos: int):
+    n_sharp = math.floor(50 * now_pos / total_pos)
+    n_space = 50 - n_sharp
+    sys.stdout.write(
+        "  ["
+        + "#" * n_sharp
+        + " " * n_space
+        + "]"
+        + "{:.2%}\r".format(now_pos / total_pos)
+    )
+
+
+def combine_npys(npy_list: list):
+    n_files = len(npy_list)
+    all_npy = None
+    nn = 0
+    for nf in npy_list:
+        tmp_npy = np.load(nf)
+        nn += 1
+        print("{}/{} npy added".format(nn, n_files))
+        if all_npy is None:
+            all_npy = tmp_npy
+        else:
+            all_npy = np.vstack((all_npy, tmp_npy))
+    return all_npy
+
+
+def get_pathrow_data_label(s: str):
+    sb = s.split("/")[-2]
+    sl = sb.split("_")
+    namestr = sl[2][0:3] + "-" + sl[2][3:6] + "-" + sl[3]
+    return namestr
