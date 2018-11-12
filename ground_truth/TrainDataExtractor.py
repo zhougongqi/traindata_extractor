@@ -25,6 +25,7 @@ class TrainDataExtractorV2:
         *,
         label_field_name: str = "label",
         label_keep_list: list = [1],
+        is_binarize: bool = True,
         poly_id_field: str = "type",
         bound_field: str = "ID_1",
         mask_value: int = 1,
@@ -84,6 +85,7 @@ class TrainDataExtractorV2:
         self.mask_value = mask_value
         self.label_keep_list = label_keep_list
         self.ref_coef = 10000
+        self.isbinarize = is_binarize
 
         self.read_order_list = read_order_list
         self.__n_block = 1
@@ -428,9 +430,12 @@ class TrainDataExtractorV2:
         self.train_feature = td_arr
 
         # process data
-        self.feature_norm_ref()
+        # self.feature_norm_ref() #zzz
         self.stat_labels()
-        pids = self.binarize_label()
+        if self.isbinarize:
+            pids = self.binarize_label()
+        else:
+            pids = pids
 
         # add labels at the last colomn
         td_arr = np.vstack((self.train_feature, pids))
@@ -444,6 +449,9 @@ class TrainDataExtractorV2:
         print(feat_name_list)
 
         # zzz todo: add invalid value removal
+        # delete all zero cols
+        td_arr = delete_0s_row(td_arr)
+        td_arr = delete_999_row(td_arr)
 
         npy_path = self.work_path + "TD_" + self.outname_label + ".npy"
         np.save(npy_path, td_arr)

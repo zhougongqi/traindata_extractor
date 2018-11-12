@@ -35,25 +35,22 @@ def main(process_dict: dict):
 
     #
     tde = TrainDataExtractorV2(
-        process_dict, read_order_list, sample_label="l8_heishan_test"
+        process_dict, read_order_list, sample_label="l8_heishan_test", is_binarize=False
     )
     status = tde.set_join_char("_")
-    status = tde.set_keep_label([1])
+    status = tde.set_keep_label([1, 2, 3, 4])
     traindata, feat_name_list, npypath = tde.go_get_mask_2npy()
     process_dict["traindata_path_npy"] = npypath
 
     # run predictor
 
-    print("fin")
+    print(traindata[100:105, :])
 
     return True
 
 
-if __name__ == "__main__":
-    """
-    mainly for landsat 8 seperate band tif imgs
-    """
-    ori_ras_path = "/home/tq/tq-data05/landsat_sr/LC08/01/114/028/LC08_L1TP_114028_20180831_20180912_01_T1/"
+def go_main(ori_ras_path: str):
+
     # "/home/tq/tq-data05/landsat_sr/LC08/01/118/032/LC08_L1TP_118032_20180827_20180830_01_T1/"
     # "/home/tq/tq-data03/landsat_sr/LC08/01/120/032/LC08_L1TP_120032_20180825_20180829_01_T1/"
     # "/home/tq/tq-data03/landsat_sr/LC08/01/119/030/LC08_L1TP_119030_20180802_20180814_01_T1/"
@@ -63,6 +60,7 @@ if __name__ == "__main__":
     # "/home/tq/tq-data05/landsat_sr/LC08/01/114/028/LC08_L1TP_114028_20180831_20180912_01_T1/"
     # "/home/tq/tq-data05/landsat_sr/LC08/01/117/027/LC08_L1TP_117027_20180820_20180829_01_T1/"
     # "/home/tq/tq-data05/landsat_sr/LC08/01/119/027/LC08_L1TP_119027_20180818_20180829_01_T1/"
+    # "/home/tq/tq-data05/landsat_sr/LC08/01/115/028/LC08_L1TP_115028_20180806_20180814_01_T1/"
     outname_label = get_pathrow_data_label(ori_ras_path)
     # "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
     pro_ras_list = [
@@ -70,11 +68,11 @@ if __name__ == "__main__":
         "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
     ]
     process_dict = {
-        "outname_label": outname_label + "v2",
+        "outname_label": outname_label + "v5",
         "img_pro_dict": {},
         "shp_reproj_dict": {
-            "samples": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_n51_HJ.shp",
-            "template": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_xxx_HJ.shp",
+            "samples": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_n51_HJv2.shp",
+            "template": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_xxx_HJv2.shp",
         },
         "pro_ras_list": pro_ras_list,
         "work_path": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/npys/",
@@ -119,3 +117,23 @@ if __name__ == "__main__":
 
     # run main
     status = main(process_dict)
+
+
+if __name__ == "__main__":
+    """
+    mainly for landsat 8 seperate band tif imgs
+    """
+    ori_ras_path_list = [
+        "/home/tq/tq-data03/landsat_sr/LC08/01/118/029/LC08_L1TP_118029_20180811_20180815_01_T1/",
+        "/home/tq/tq-data05/landsat_sr/LC08/01/114/028/LC08_L1TP_114028_20180831_20180912_01_T1/",
+        "/home/tq/tq-data05/landsat_sr/LC08/01/117/027/LC08_L1TP_117027_20180820_20180829_01_T1/",
+        "/home/tq/tq-data05/landsat_sr/LC08/01/119/027/LC08_L1TP_119027_20180818_20180829_01_T1/",
+        "/home/tq/tq-data05/landsat_sr/LC08/01/115/028/LC08_L1TP_115028_20180806_20180814_01_T1/",
+        "/home/tq/tq-data03/landsat_sr/LC08/01/119/028/LC08_L1TP_119028_20180802_20180814_01_T1/",
+        "/home/tq/tq-data03/landsat_sr/LC08/01/115/027/LC08_L1TP_115027_20180806_20180814_01_T1/",
+        "/home/tq/tq-data03/landsat_sr/LC08/01/119/024/LC08_L1TP_119024_20180802_20180814_01_T1/",
+    ]
+    for f in ori_ras_path_list:
+        go_main(f)
+
+    print("fin")

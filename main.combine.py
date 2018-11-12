@@ -22,11 +22,11 @@ from sklearn.ensemble import RandomForestClassifier
 if __name__ == "__main__":
 
     ori_ras_path = (
-        "/home/tq/data_pool/china_crop/Liaoning/npys/"
+        "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/npys/"
     )  # TD_118-032-20180827.npy
 
     # glob wanted files
-    npylist = get_bands_into_a_list(ori_ras_path, "*v2.npy")
+    npylist = get_bands_into_a_list(ori_ras_path, "*v5.npy")
 
     all_npy = combine_npys(npylist)
     print(all_npy.shape)
@@ -35,6 +35,21 @@ if __name__ == "__main__":
     for n in npylist:
         npylabel = os.path.basename(n).split("_")[1]
         outpath = outpath + npylabel + "_"
-    outpath = outpath + "v2.npy"
+    outpath = outpath + "v5.npy"
+
+    all_npy = all_npy.astype(np.float)
+    all_npy[:, 0:7] = all_npy[:, 0:7] / 10000.0
+
+    # binarize labels
+    indx = np.where(all_npy == 2.)
+    all_npy[indx] = 0
+
+    indx = np.where(all_npy == 3.)
+    all_npy[indx] = 0
+
+    indx = np.where(all_npy == 4.)
+    all_npy[indx] = 0
+
+    print(all_npy[100:105, :])
     np.save(outpath, all_npy)
 

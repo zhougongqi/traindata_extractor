@@ -217,6 +217,25 @@ def delete_999_row(array: np.ndarray) -> np.ndarray:
     return arr
 
 
+def delete_0s_row(array: np.ndarray) -> np.ndarray:
+    """
+    Function:
+        delete the rows contains NaN values in given array $array
+    return:
+        a new array that deleted some rows where contains NaN.
+    """
+    # row is feature, so process by each row
+    row, col = array.shape
+    arr = array
+    for r in range(col - 1):
+        idx_nan = np.where(arr <= 0)
+        # idx_nan = idx_nan.flatten()
+        if len(idx_nan):
+            arr = np.delete(arr, idx_nan, axis=0)
+    print(array.shape, "0s deleted!, new shape is :", arr.shape)
+    return arr
+
+
 def replace_invalid_value(array: np.ndarray, new_value: int) -> np.ndarray:
     """
     Function:
