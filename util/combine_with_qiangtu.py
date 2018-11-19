@@ -1,5 +1,6 @@
 import os
 import gc
+import cv2
 import sys
 import math
 import time
@@ -263,3 +264,77 @@ def combine_with_qiangtu_step2(z_path: str, q_path: str, work_path: str):
 
     return True
 
+
+def combine_with_qiangtu_step2v2(z_path: str, q_path: str, work_path: str):
+    """
+    v2 version use morphlogical math to delete some freckles:)
+
+    z_path: path of my rice, and be merged by arcgis
+        0: to be replaced by qiangtu
+        1: not rice
+        2: rice
+    q_path: qiangtu path, merged
+        0: not rice
+        1: rice
+        255: not rice
+    """
+    # read all files
+    # run gdal_merge.py to stack them
+    mlp_bname = os.path.basename(z_path)
+    mlp_name, mlp_ext = os.path.splitext(mlp_bname)
+
+    tmp_file = work_path + mlp_name + "_tmp.tif"
+    cmd_str = (
+        "gdal_merge.py -separate -of GTiff -o "  # -n 0 -a_nodata 0
+        + tmp_file
+        + " "
+        + z_path
+        + " "
+        + q_path
+    )
+    print("cmd string is :", cmd_str)
+    process_status = subprocess.run(cmd_str, shell=True)
+    if process_status.returncode != 0:
+        print("cmd failed!")
+        return None
+
+    # read from new generated tmp.tif
+    ds = gdal.Open(tmp_file)
+    geo_trans = ds.GetGeoTransform()
+    w = ds.RasterXSize
+    h = ds.RasterYSize
+    img_shape = [h, w]
+    proj = ds.GetProjection()
+    ras_spatial_ref = osr.SpatialReference(wkt=proj)
+    proj_name = ras_spatial_ref.GetAttrValue("projcs")
+    mlp_data = ds.GetRasterBand(1).ReadAsArray()
+    qtu_data = ds.GetRasterBand(2).ReadAsArray()
+
+    qtu_data[qtu_data == 255] = 0
+    # morph
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    qtu_data = cv2.erode(qtu_data, kernel)
+
+    # morph end
+    qtu_data = qtu_data + 1
+
+    idx = np.where(mlp_data == 0)
+    mlp_data[idx] = qtu_data[idx]
+
+    mlp_data = mlp_data - 1
+    mlp_data[mlp_data > 200] = 0
+
+    # print stat
+    idx1 = np.where(mlp_data == 1)
+    print(len(idx1[0]))
+    # build output path
+    outpath = work_path + mlp_name + "_fusion_final2.tif"
+    # write output into tiff file
+    out_ds = gdal.GetDriverByName("GTiff").Create(outpath, w, h, 1, gdal.GDT_Byte)
+    out_ds.SetProjection(proj)
+    out_ds.SetGeoTransform(geo_trans)
+    out_ds.GetRasterBand(1).WriteArray(mlp_data)
+    out_ds.FlushCache()
+    ds = None
+
+    return True

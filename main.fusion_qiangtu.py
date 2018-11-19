@@ -37,6 +37,12 @@ def main(combine_dict: dict):
 if __name__ == "__main__":
     """
     deal with results fusion
+
+    read original data's qa information, add cloud info into classification
+    results.
+    origin class (0,1) will be added by 1 to (1,2) temporary, because 0 is for cloud,
+    this will be easier to process in arcgis merger using MAX method to eliminate 
+    cloud in the overlapping area.
     """
     #
     combine_dict = {

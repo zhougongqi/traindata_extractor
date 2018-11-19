@@ -12,6 +12,10 @@ from traindata_extractor.general.common import (
     delete_nan_row,
 )
 
+"""
+temporary useless in this project
+"""
+
 
 class TrainDataProcessor:
     my_logger = logging.getLogger(__qualname__)
