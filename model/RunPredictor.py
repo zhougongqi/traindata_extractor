@@ -7,11 +7,18 @@ import logging
 import numpy as np
 from osgeo import gdal
 from sklearn.externals import joblib
+import json
 
 from traindata_extractor.general.feat_calc import feat_calc
 from traindata_extractor.general.common import *
 
 my_logger = logging.getLogger(__name__)
+
+
+def load_json(json_file_path):
+    with open(json_file_path, "r") as fp:
+        tmp = json.load(fp)
+    return tmp
 
 
 def run_predictor(
