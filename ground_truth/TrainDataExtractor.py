@@ -31,6 +31,7 @@ class TrainDataExtractorV2:
         place_label: str = "OV",
         time_label: str = "201709",
         sample_label: str = "test",
+        label: int = 1,
     ):
         """
         Function:
@@ -96,6 +97,7 @@ class TrainDataExtractorV2:
         self.str_arrs = ["~", "/", "|", "\\"]
 
         self.sample_label = sample_label
+        self.id = label
 
     def set_join_char(self, char: str) -> bool:
         """
@@ -444,8 +446,10 @@ class TrainDataExtractorV2:
         print(feat_name_list)
 
         # zzz todo: add invalid value removal
-
+        td_arr[:, 7] = [self.id] * td_arr.shape[0]
         npy_path = self.work_path + "TD_" + self.outname_label + ".npy"
+        if not os.path.exists(self.work_path):
+            os.makedirs(self.work_path)
         np.save(npy_path, td_arr)
 
         rolist_path = npy_path.replace(".npy", "_ro.json")
