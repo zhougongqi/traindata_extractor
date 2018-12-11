@@ -21,6 +21,7 @@ class skModel(BaseEstimator):
         kernel="rbf",
         gamma=20,
         decision_function_shape="ovr",
+        label=4,
     ) -> str:
         """
         Sk-series classifier
@@ -39,7 +40,14 @@ class skModel(BaseEstimator):
 
         # split train feature and label
         self.train_feature = training_dataSet[:, :-1]
-        self.train_label = training_dataSet[:, -1]
+        train_label = training_dataSet[:, -1]
+
+        # ********************************************************************
+        train_label[train_label != label] = 0
+        train_label[train_label == label] = 1
+        self.train_label = train_label
+        # ********************************************************************
+
         print("feature shape: ", self.train_feature.shape)
         print("label shape: ", self.train_label.shape)
 
