@@ -11,6 +11,8 @@ if __name__ == "__main__":
     """
     prepare some annoying steps
 
+    json version
+
     1, read Landsat-8 data list from a json
     2, reform the path make them looks alright
     3, get bands from each l-8 paths, and stack them

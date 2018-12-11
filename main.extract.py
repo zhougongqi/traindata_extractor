@@ -71,8 +71,8 @@ def go_main(ori_ras_path: str):
         "outname_label": outname_label + "v5",
         "img_pro_dict": {},
         "shp_reproj_dict": {
-            "samples": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_n51_HJv2.shp",
-            "template": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_xxx_HJv2.shp",
+            "samples": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_n51_HJv2.shp",  # "/home/tq/data_pool/U-TMP/mishan_fujin_shp/corn_52n.shp",
+            "template": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/rois/roi_4c_RiOtSoCo_L8_utm_xxx_HJv2.shp",  # "/home/tq/data_pool/U-TMP/mishan_fujin_shp/corn_xxx.shp",
         },
         "pro_ras_list": pro_ras_list,
         "work_path": "/home/tq/data_pool/china_crop/Jilin-Heilongjiang/npys/",
@@ -103,7 +103,9 @@ def go_main(ori_ras_path: str):
         shpname = process_dict["shp_reproj_dict"]["template"].replace("xxx", "n53")
         process_dict["shp_reproj_dict"]["samples"] = shpname
 
-    shapef = ogr.Open(process_dict["shp_reproj_dict"]["samples"])
+    driver = ogr.GetDriverByName("ESRI Shapefile")
+    shapef = driver.Open(process_dict["shp_reproj_dict"]["samples"], 0)
+    # shapef = ogr.Open(process_dict["shp_reproj_dict"]["samples"])
     lyr = shapef.GetLayer(0)
     shp_spatial_ref = lyr.GetSpatialRef()
     proj_name2 = shp_spatial_ref.GetAttrValue("projcs")
