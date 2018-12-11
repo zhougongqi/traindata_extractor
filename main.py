@@ -15,19 +15,31 @@ from traindata_extractor.model.DecisionTree import DecisionTree
 
 # test model
 from sklearn.neural_network import MLPClassifier
-from xgboost import XGBClassifier
+# from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier
 
+from sklearn import svm
+from sklearn.metrics import confusion_matrix
+import json
+import numpy as np
 
-def main(process_dict: dict):
+
+def load_json(json_file_path):
+    with open(json_file_path, "r") as fp:
+        tmp = json.load(fp)
+    return tmp
+
+
+def main(process_dict: dict, lab: int):
     pprint.pprint(process_dict)
-    img_prepro_dict = process_dict["img_pro_dict"]
+    # img_prepro_dict = process_dict["img_pro_dict"]
 
     # get a read order list
     read_order_list = load_json(process_dict["read_order_list"])
     pprint.pprint(read_order_list)
 
     traindata = np.load(process_dict["traindata_path_npy"])
+
 
     ## train model
     # svm = SVMClassifier(traindata, process_dict["work_path"])
@@ -45,8 +57,10 @@ def main(process_dict: dict):
     # train model
     # RandomForestClassifier
     # MLPClassifier
-    skm = skModel(MLPClassifier(), traindata, process_dict["work_path"])
+
+    skm = skModel(MLPClassifier(), traindata, process_dict["work_path"], label=lab)
     model_path = skm.fit()
+
     process_dict["model_path"] = model_path
 
     status, result_path = run_predictor(process_dict)
@@ -64,37 +78,26 @@ if __name__ == "__main__":
     """
     mainly for landsat 8 seperate band tif imgs
     """
-    ori_ras_path = "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
-    # "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/"
+    home = os.path.expanduser('~')
+    reg = 'NJ'
+    crop = 'corn'
+    iid = 1
     pro_ras_list = [
-        # "/home/tq/tq-data04/landsat_sr/LC08/01/120/030/LC08_L1TP_120030_20180910_20180913_01_T1/"
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/121/031/LC08_L1TP_121031_20180816_20180829_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/030/LC08_L1TP_120030_20180910_20180913_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/031/LC08_L1TP_120031_20180809_20180815_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/120/032/LC08_L1TP_120032_20180825_20180829_01_T1/",
-        "/home/tq/tq-data04/landsat_sr/LC08/01/120/033/LC08_L1TP_120033_20180825_20180829_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/119/030/LC08_L1TP_119030_20180802_20180814_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/119/031/LC08_L1TP_119031_20180802_20180814_01_T1/",
-        "/home/tq/tq-data03/landsat_sr/LC08/01/119/032/LC08_L1TP_119032_20180802_20180814_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/031/LC08_L1TP_118031_20180827_20180830_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/032/LC08_L1TP_118032_20180827_20180830_01_T1/",
-        "/home/tq/tq-data05/landsat_sr/LC08/01/118/033/LC08_L1TP_118033_20180827_20180830_01_T1/",
+        home + "/tq-data05/landsat_sr/LC08/01/119/025/LC08_L1TP_119025_20180818_20180829_01_T1/",
+        # home + "/tq-data05/landsat_sr/LC08/01/119/026/LC08_L1TP_119026_20180818_20180829_01_T1/"
     ]
+    npy_path = home + "/data_pool/U-TMP/" + reg + "/npys/"
+    all_npy = "TD_all_corn_soybeans_rice_other_ALL_v1.npy"
+    order_json = "TD_LC08_L1TP_119025_20180818_corn_v1_ro.json"
     process_dict = {
         "img_pro_dict": {},
-        "shp_reproj_dict": {
-            "samples": "/home/tq/data_pool/china_crop/Liaoning/shape/roi_2c_RiOt_L8_shp_all_utm_n51_3tile_2.shp"
-        },
         "pro_ras_list": pro_ras_list,
-        "work_path": "/home/tq/data_pool/china_crop/Liaoning/out/mlp2/",
-        "field_name": "label",
-        "traindata_path_npy": "/home/tq/data_pool/china_crop/Liaoning/npys/TD_all_118-032-20180827v2.npy_119-030-20180802v2.npy_120-032-20180825v2.npy_v2.npy",
-        "read_order_list": "/home/tq/data_pool/china_crop/Liaoning/npys/TD_118-032-20180827_ro.json",
+        "work_path": home + "/data_pool/U-TMP/" + reg + "/out/mlp/" + crop + '/',
+        "traindata_path_npy": npy_path + all_npy,
+        "read_order_list": npy_path + order_json,
     }
-    # glob wanted files
-    img_pro_dict, band_num = get_bands_into_a_dict(ori_ras_path, "*sr_band*.tif")
-    process_dict["img_pro_dict"] = img_pro_dict
 
+    if not os.path.exists(process_dict["work_path"]):
+        os.makedirs(process_dict["work_path"])
     # run main
-    status = main(process_dict)
+    status = main(process_dict, iid)
